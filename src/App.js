@@ -14,11 +14,9 @@ class App extends Component {
 
     this.state = {
       ssid: '',
-      password: '',
+      pwd: '',
       device_id: '%DEVICE_ID%',
-      sensors: [
-        defaultSensor
-      ],
+      sensors: [ defaultSensor ],
       loading: false,
       error: null,
       sent: false
@@ -48,48 +46,59 @@ class App extends Component {
     })
   }
 
+  getRequestBody = () => {
+    const { ssid, pwd, sensors } = this.state;
+    return {
+      ssid,
+      pwd,
+      actuators: sensors
+        .filter(sensor => sensor.type === 'actuator')
+        .map(actuator => ({
+        driver: actuator.driver,
+        name: actuator.name,
+        pins: ['GPIO5', 'GPIO4', 'GPIO0']
+      })),
+      sensors: sensors
+        .filter(sensor => sensor.type === 'sensor')
+        .map(sensor => ({
+        driver: sensor.driver,
+        name: sensor.name,
+        pins: ['GPIO13']
+      }))
+    }
+  }
+
+  onComplete = () => {
+    this.setState({
+      loading: false,
+      sent: true
+    })
+  }
+
+  onError = error => {
+    this.setState({
+      loading: false,
+      error
+    })
+  }
+
   onSubmit = e => {
     e.preventDefault();
     const url = process.env.REACT_APP_POST_URL;
-    const { ssid, password, sensors } = this.state;
 
     this.setState({
       loading: true,
       sent: false,
       error: null
     });
+
     fetch(url, {
-      method: "POST",
-      body: JSON.stringify({
-        ssid,
-        pwd: password,
-        actuators: sensors
-          .filter(sensor => sensor.type === 'actuator')
-          .map(actuator => ({
-          driver: actuator.driver,
-          name: actuator.name,
-          pins: ['GPIO5', 'GPIO4', 'GPIO0']
-        })),
-        sensors: sensors
-          .filter(sensor => sensor.type === 'sensor')
-          .map(sensor => ({
-          driver: sensor.driver,
-          name: sensor.name,
-          pins: ['GPIO13']
-        }))
-      })
-    }).then(() => {
-      this.setState({
-        loading: false,
-        sent: true
-      })
-    }).catch(error => {
-      this.setState({
-        loading: false,
-        sent: false,
-        error
-      })
+      method: 'POST',
+      body: JSON.stringify(this.getRequestBody())
     })
+    .then(this.onComplete)
+    .catch(this.onError)
+
     return false;
   }
 
@@ -97,7 +106,7 @@ class App extends Component {
 
     const {
       ssid: selectedSsid,
-      password,
+      pwd,
       device_id,
       sensors,
       loading,
@@ -118,8 +127,8 @@ class App extends Component {
           </select>
           <input
           type='password'
-          name='password'
-          value={password}
+          name='pwd'
+          value={pwd}
           required
           onChange={this.handleChange}
           placeholder='password'
@@ -135,28 +144,40 @@ class App extends Component {
             {sensors.map((sensor, index) => (
               <div key={index} className='thing'>
                 <div className='thing-title'>Thing {sensor.name || index}</div>
-                <select name='type' required value={sensor.type} onChange={this.handleSensorChange(index)}>
+                <select
+                name='type'
+                value={sensor.type}
+                onChange={this.handleSensorChange(index)}>
                   <option value='sensor'>Sensor</option>
                   <option value='actuator'>Actuator</option>
                 </select>
-                <select name='driver' required value={sensor.driver} onChange={this.handleSensorChange(index)}>
+                <select
+                name='driver'
+                value={sensor.driver}
+                onChange={this.handleSensorChange(index)}>
                   <option value='relay'>Relay</option>
                   <option value='dimmer'>Dimmer</option>
                 </select>
-                <input type='text' name='name' required placeholder='Name' onChange={this.handleSensorChange(index)}/>
+                <input
+                type='text'
+                name='name'
+                required
+                placeholder='Name'
+                onChange={this.handleSensorChange(index)}/>
               </div>
             ))}
           </div>
-          <input type='button'
+          <input
+          type='button'
           className='btn btn-primary btn-block btn-large'
           onClick={this.addSensor}
           value='+' />
           <input type='submit' className='btn btn-primary btn-block btn-large' value='Connect' />
         </form>
         <div className='console'>
-          <span>{loading && '...sending data'}</span>
-          <span>{sent && 'OK'}</span>
-          <span>{error && 'error : '+error}</span>
+          <div>{loading && '...sending data'}</div>
+          <div>{sent && 'OK'}</div>
+          <div>{error && 'error : '+error}</div>
         </div>
       </div>
     );
