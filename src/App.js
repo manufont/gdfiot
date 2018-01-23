@@ -16,7 +16,7 @@ class App extends Component {
       ssid: '',
       pwd: '',
       device_id: '%DEVICE_ID%',
-      sensors: [ defaultSensor ],
+      things: [ defaultSensor ],
       loading: false,
       error: null,
       sent: false
@@ -29,9 +29,9 @@ class App extends Component {
     })
   }
   
-  handleSensorChange = sensorIndex => e => {
+  handleThingChange = sensorIndex => e => {
     this.setState({
-      sensors: this.state.sensors.map((sensor, index) =>
+      things: this.state.things.map((sensor, index) =>
         index !== sensorIndex ? sensor : {
           ...sensor,
           [e.target.name]: e.target.value
@@ -42,23 +42,23 @@ class App extends Component {
 
   addSensor = () => {
     this.setState({
-      sensors: [...this.state.sensors, defaultSensor]
+      things: [...this.state.things, defaultSensor]
     })
   }
 
   getRequestBody = () => {
-    const { ssid, pwd, sensors } = this.state;
+    const { ssid, pwd, things } = this.state;
     return {
       ssid,
       pwd,
-      actuators: sensors
+      actuators: things
         .filter(sensor => sensor.type === 'actuator')
         .map(actuator => ({
         driver: actuator.driver,
         name: actuator.name,
         pins: ['GPIO5', 'GPIO4', 'GPIO0']
       })),
-      sensors: sensors
+      sensors: things
         .filter(sensor => sensor.type === 'sensor')
         .map(sensor => ({
         driver: sensor.driver,
@@ -108,7 +108,7 @@ class App extends Component {
       ssid: selectedSsid,
       pwd,
       device_id,
-      sensors,
+      things,
       loading,
       error,
       sent
@@ -141,20 +141,20 @@ class App extends Component {
           onChange={this.handleChange}
           placeholder='%DEVICE_ID%' />
           <div id='sensor_list'>
-            {sensors.map((sensor, index) => (
+            {things.map((thing, index) => (
               <div key={index} className='thing'>
-                <div className='thing-title'>Thing {sensor.name || index}</div>
+                <div className='thing-title'>Thing {thing.name || index}</div>
                 <select
                 name='type'
-                value={sensor.type}
-                onChange={this.handleSensorChange(index)}>
+                value={thing.type}
+                onChange={this.handleThingChange(index)}>
                   <option value='sensor'>Sensor</option>
                   <option value='actuator'>Actuator</option>
                 </select>
                 <select
                 name='driver'
-                value={sensor.driver}
-                onChange={this.handleSensorChange(index)}>
+                value={thing.driver}
+                onChange={this.handleThingChange(index)}>
                   <option value='relay'>Relay</option>
                   <option value='dimmer'>Dimmer</option>
                 </select>
@@ -163,7 +163,7 @@ class App extends Component {
                 name='name'
                 required
                 placeholder='Name'
-                onChange={this.handleSensorChange(index)}/>
+                onChange={this.handleThingChange(index)}/>
               </div>
             ))}
           </div>
