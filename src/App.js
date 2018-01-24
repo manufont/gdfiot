@@ -32,10 +32,10 @@ const pinList = [
 ];
 
 const defaultSensor = {
-  type: 'sensor',
-  driver: driverMap['sensor'][0],
+  type: 'actuator',
+  driver: 'relay',
   name: '',
-  pins: Array(pinNumberMap[driverMap['sensor'][0]]).fill('')
+  pins: Array(pinNumberMap['relay']).fill('')
 };
 
 const addDriverToThing = thing => ({
@@ -58,7 +58,7 @@ class App extends Component {
     this.state = {
       ssid: '',
       pwd: '',
-      device_id: '%DEVICE_ID%',
+      platform: 'dweet.io',
       things: [ defaultSensor ],
       loading: false,
       error: null,
@@ -71,7 +71,7 @@ class App extends Component {
       [e.target.name]: e.target.value
     })
   }
-  
+
   handleThingChange = sensorIndex => e => {
     this.setState({
       things: this.state.things.map((sensor, index) =>
@@ -170,7 +170,7 @@ class App extends Component {
     const {
       ssid: selectedSsid,
       pwd,
-      device_id,
+      platform,
       things,
       loading,
       error,
@@ -198,15 +198,15 @@ class App extends Component {
           autoComplete='current-password' />
           <input
           type='text'
-          name='device_id'
-          value={device_id}
+          name='platform'
+          value={platform}
           required
           onChange={this.handleChange}
-          placeholder='%DEVICE_ID%' />
+          placeholder='platform' />
           <div id='sensor_list'>
             {things.map((thing, i) => (
               <div key={i} className='thing'>
-                <div className='thing-title'>Thing {thing.name || i}</div>
+                <div className='thing-title'>{thing.name || "Thing "+i}</div>
                 <select
                 name='type'
                 value={thing.type}
