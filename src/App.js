@@ -1,11 +1,54 @@
 import React, { Component } from 'react';
 import './App.css';
 
+const flatten = array => Array.prototype.concat.apply([], array);
+
+const driverMap = {
+  'sensor': ['thermometer', 'switch'],
+  'actuator': ['relay', 'dimmer']
+};
+
+const pinNumberMap = {
+  'thermometer': 2,
+  'switch': 1,
+  'dimmer': 3,
+  'relay': 3
+};
+
+const pinList = [
+  'GPIO0', 
+  'GPIO1', 
+  'GPIO2', 
+  'GPIO3', 
+  'GPIO4', 
+  'GPIO5', 
+  'GPIO9', 
+  'GPIO10', 
+  'GPIO12', 
+  'GPIO13', 
+  'GPIO14', 
+  'GPIO15', 
+  'GPIO16'
+];
+
 const defaultSensor = {
   type: 'sensor',
-  driver: 'relay',
-  name: ''
+  driver: driverMap['sensor'][0],
+  name: '',
+  pins: Array(pinNumberMap[driverMap['sensor'][0]]).fill('')
 };
+
+const addDriverToThing = thing => ({
+  ...thing,
+  driver: driverMap[thing.type].indexOf(thing.driver) > -1 ? thing.driver : driverMap[thing.type][0]
+})
+
+const addPinsToThing = thing => ({
+  ...thing,
+  ...(thing.pins.length !== pinNumberMap[thing.driver]) && {
+    pins: Array(pinNumberMap[thing.driver]).fill('')
+  }
+})
 
 class App extends Component {
 
@@ -32,9 +75,22 @@ class App extends Component {
   handleThingChange = sensorIndex => e => {
     this.setState({
       things: this.state.things.map((sensor, index) =>
-        index !== sensorIndex ? sensor : {
+        index !== sensorIndex ? sensor : addPinsToThing(addDriverToThing({
           ...sensor,
           [e.target.name]: e.target.value
+        }))
+      )
+    })
+  }
+  
+  handlePinChange = (sensorIndex, pinIndex) => e => {
+    this.setState({
+      things: this.state.things.map((sensor, i) =>
+        i !== sensorIndex ? sensor : {
+          ...sensor,
+          pins: sensor.pins.map((pin, j) =>
+            j !== pinIndex ? pin : e.target.value
+          )
         }
       )
     })
@@ -56,14 +112,14 @@ class App extends Component {
         .map(actuator => ({
         driver: actuator.driver,
         name: actuator.name,
-        pins: ['GPIO5', 'GPIO4', 'GPIO0']
+        pins: actuator.pins
       })),
       sensors: things
         .filter(sensor => sensor.type === 'sensor')
         .map(sensor => ({
         driver: sensor.driver,
         name: sensor.name,
-        pins: ['GPIO13']
+        pins: sensor.pins
       }))
     }
   }
@@ -100,6 +156,13 @@ class App extends Component {
     .catch(this.onError)
 
     return false;
+  }
+
+  getAvailablePins = (thingIndex, pinIndex) => {
+    const usedPins = flatten(this.state.things.map(thing => thing.pins))
+      .filter(pin => pin !== '' && pin !== this.state.things[thingIndex].pins[pinIndex])
+
+    return pinList.filter(pin => usedPins.indexOf(pin) === -1)
   }
 
   render() {
@@ -141,29 +204,38 @@ class App extends Component {
           onChange={this.handleChange}
           placeholder='%DEVICE_ID%' />
           <div id='sensor_list'>
-            {things.map((thing, index) => (
-              <div key={index} className='thing'>
-                <div className='thing-title'>Thing {thing.name || index}</div>
+            {things.map((thing, i) => (
+              <div key={i} className='thing'>
+                <div className='thing-title'>Thing {thing.name || i}</div>
                 <select
                 name='type'
                 value={thing.type}
-                onChange={this.handleThingChange(index)}>
+                onChange={this.handleThingChange(i)}>
                   <option value='sensor'>Sensor</option>
                   <option value='actuator'>Actuator</option>
                 </select>
                 <select
                 name='driver'
                 value={thing.driver}
-                onChange={this.handleThingChange(index)}>
-                  <option value='relay'>Relay</option>
-                  <option value='dimmer'>Dimmer</option>
+                onChange={this.handleThingChange(i)}>
+                  {driverMap[thing.type].map((driver, j) => 
+                    <option key={j} value={driver}>{driver}</option>
+                  )}
                 </select>
+                {thing.pins.map((selectedPin, j) => (
+                  <select key={j} name='pin' required value={selectedPin} onChange={this.handlePinChange(i, j)} required>
+                    <option value=''>Select pin #{j}</option>
+                    {this.getAvailablePins(i, j).map((pin, k) =>
+                      <option key={k} value={pin}>{pin}</option>
+                    )}
+                  </select>
+                ))}
                 <input
                 type='text'
                 name='name'
                 required
                 placeholder='Name'
-                onChange={this.handleThingChange(index)}/>
+                onChange={this.handleThingChange(i)}/>
               </div>
             ))}
           </div>
