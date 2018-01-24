@@ -96,9 +96,15 @@ class App extends Component {
     })
   }
 
-  addSensor = () => {
+  addThing = () => {
     this.setState({
       things: [...this.state.things, defaultSensor]
+    })
+  }
+
+  removeThing = index => {
+    this.setState({
+      things: this.state.things.filter((thing, i) => i !== index)
     })
   }
 
@@ -206,7 +212,11 @@ class App extends Component {
           <div id='sensor_list'>
             {things.map((thing, i) => (
               <div key={i} className='thing'>
-                <div className='thing-title'>{thing.name || "Thing "+i}</div>
+                {i !== 0 && <hr/>}
+                <div className='thing-header'>
+                  <div>{thing.name || "Thing "+i}</div>
+                  {things.length > 1 && <div onClick={() => this.removeThing(i)}>X</div>}
+                </div>
                 <select
                 name='type'
                 value={thing.type}
@@ -223,7 +233,7 @@ class App extends Component {
                   )}
                 </select>
                 {thing.pins.map((selectedPin, j) => (
-                  <select key={j} name='pin' required value={selectedPin} onChange={this.handlePinChange(i, j)} required>
+                  <select key={j} name='pin' value={selectedPin} onChange={this.handlePinChange(i, j)} required>
                     <option value=''>Select pin #{j}</option>
                     {this.getAvailablePins(i, j).map((pin, k) =>
                       <option key={k} value={pin}>{pin}</option>
@@ -242,7 +252,7 @@ class App extends Component {
           <input
           type='button'
           className='btn btn-primary btn-block btn-large'
-          onClick={this.addSensor}
+          onClick={this.addThing}
           value='+' />
           <input type='submit' className='btn btn-primary btn-block btn-large' value='Connect' />
         </form>
