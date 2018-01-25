@@ -14,7 +14,7 @@ class App extends Component {
   }
 
   componentWillMount(){
-    const url = process.env.REACT_APP_SSIDs_URL;
+    const url = process.env.REACT_APP_SSIDS_URL;
 
     fetch(url)
     .then(response => response.json())
