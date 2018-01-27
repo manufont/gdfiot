@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 
+import './App.css';
 import Form from './Form.js';
 
 class App extends Component {
@@ -27,7 +28,7 @@ class App extends Component {
     const { ssids, error } = this.state;
 
     return (
-      <div style={{ width: '100%', height: '100%' }}>
+      <div id='app'>
         {ssids && <Form ssids={ssids}/>}
         <div className='console'>
           {error && 'Error : '+error}

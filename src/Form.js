@@ -1,5 +1,4 @@
 import React, { Component } from 'react';
-import './Form.css';
 
 const flatten = array => Array.prototype.concat.apply([], array);
 
