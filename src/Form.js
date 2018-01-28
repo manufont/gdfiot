@@ -15,19 +15,19 @@ const pinNumberMap = {
 };
 
 const pinList = [
-  'GPIO0', 
-  'GPIO1', 
-  'GPIO2', 
-  'GPIO3', 
-  'GPIO4', 
-  'GPIO5', 
-  'GPIO9', 
-  'GPIO10', 
-  'GPIO12', 
-  'GPIO13', 
-  'GPIO14', 
-  'GPIO15', 
-  'GPIO16'
+  0, 
+  1, 
+  2, 
+  3, 
+  4, 
+  5, 
+  9, 
+  10, 
+  12, 
+  13, 
+  14, 
+  15, 
+  16
 ];
 
 const defaultSensor = {
@@ -88,7 +88,7 @@ class Form extends Component {
         i !== sensorIndex ? sensor : {
           ...sensor,
           pins: sensor.pins.map((pin, j) =>
-            j !== pinIndex ? pin : e.target.value
+            j !== pinIndex ? pin : parseInt(e.target.value, 0)
           )
         }
       )
@@ -235,7 +235,7 @@ class Form extends Component {
                   <select key={j} name='pin' value={selectedPin} onChange={this.handlePinChange(i, j)} required>
                     <option value=''>Select pin #{j}</option>
                     {this.getAvailablePins(i, j).map((pin, k) =>
-                      <option key={k} value={pin}>{pin}</option>
+                      <option key={k} value={pin}>GPIO{pin}</option>
                     )}
                   </select>
                 ))}
