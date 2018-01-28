@@ -11,22 +11,22 @@ const pinNumberMap = {
   'thermometer': 2,
   'switch': 1,
   'dimmer': 3,
-  'relay': 3
+  'relay': 1
 };
 
 const pinList = [
-  0, 
-  1, 
-  2, 
-  3, 
-  4, 
-  5, 
-  9, 
-  10, 
-  12, 
-  13, 
-  14, 
-  15, 
+  0,
+  1,
+  2,
+  3,
+  4,
+  5,
+  9,
+  10,
+  12,
+  13,
+  14,
+  15,
   16
 ];
 
@@ -81,7 +81,7 @@ class Form extends Component {
       )
     })
   }
-  
+
   handlePinChange = (sensorIndex, pinIndex) => e => {
     this.setState({
       things: this.state.things.map((sensor, i) =>
@@ -108,10 +108,11 @@ class Form extends Component {
   }
 
   getRequestBody = () => {
-    const { ssid, pwd, things } = this.state;
+    const { ssid, pwd, platform, things } = this.state;
     return {
       ssid,
       pwd,
+      platform,
       actuators: things
         .filter(sensor => sensor.type === 'actuator')
         .map(actuator => ({
@@ -227,7 +228,7 @@ class Form extends Component {
                 name='driver'
                 value={thing.driver}
                 onChange={this.handleThingChange(i)}>
-                  {driverMap[thing.type].map((driver, j) => 
+                  {driverMap[thing.type].map((driver, j) =>
                     <option key={j} value={driver}>{driver}</option>
                   )}
                 </select>
